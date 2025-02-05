@@ -78,6 +78,8 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME_USR', passwordVariable: 'DOCKER_USERNAME_PSW')]) {
+                        // Debugging Docker Username and Password
+                        echo "Docker Username: ${DOCKER_USERNAME_USR}"
                         sh "echo ${DOCKER_USERNAME_PSW} | docker login -u ${DOCKER_USERNAME_USR} --password-stdin"
                     }
                 }
@@ -90,9 +92,15 @@ pipeline {
                     def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:${newVersion}"
                     def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:latest"
 
+                    // Debugging image tags
                     echo "Building Docker Image: ${imageTag}"
+                    echo "Tagging Latest: ${latestTag}"
+
+                    // Building Docker image
                     sh "docker build -t ${imageTag} ."
                     sh "docker tag ${imageTag} ${latestTag}"
+
+                    // Push images
                     sh "docker push ${imageTag}"
                     sh "docker push ${latestTag}"
                 }
@@ -100,3 +108,4 @@ pipeline {
         }
     }
 }
+
