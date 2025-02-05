@@ -42,9 +42,16 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            // steps {
+            //     checkout scm
+            // }
+            script {
+            checkout([$class: 'GitSCM', 
+                branches: [[name: '*/main']], 
+                userRemoteConfigs: [[url: 'https://github.com/itsArsalanMD/nodejs']], 
+                extensions: [[$class: 'CloneOption', depth: 0]]  // Ensures full clone
+            ])
+        }
         }
 
         stage('Version Bump') {
