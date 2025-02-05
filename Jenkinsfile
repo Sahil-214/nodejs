@@ -50,7 +50,7 @@ pipeline {
         stage('Version Bump') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         def version = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                         def (major, minor, patch) = version.tokenize('.')
                         patch = patch.toInteger() + 1
