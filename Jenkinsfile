@@ -57,8 +57,8 @@ pipeline {
                     
                     echo "New Version: ${newVersion}"
                     sh "echo '${newVersion}' > VERSION"
-                    sh "git config --global user.email 'jenkins@example.com'"
-                    sh "git config --global user.name 'Jenkins'"
+                    sh "git config --global user.email 'mohammedarsalan204@gmail.com'"
+                    sh "git config --global user.name 'ItsArsalanMD'"
                     sh "git add VERSION"
                     sh "git commit -m 'Version bump to ${newVersion}'"
                     sh "git push origin main"
