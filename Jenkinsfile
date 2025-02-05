@@ -42,16 +42,9 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            // steps {
-            //     checkout scm
-            // }
-            script {
-            checkout([$class: 'GitSCM', 
-                branches: [[name: '*/main']], 
-                userRemoteConfigs: [[url: 'https://github.com/itsArsalanMD/nodejs']], 
-                extensions: [[$class: 'CloneOption', depth: 0]]  // Ensures full clone
-            ])
-        }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Version Bump') {
@@ -68,6 +61,8 @@ pipeline {
                     sh "git config --global user.name 'ItsArsalanMD'"
                     sh "git add VERSION"
                     sh "git commit -m 'Version bump to ${newVersion}'"
+                    sh "git checkout main"
+                    sh "git pull origin main"
                     sh "git push origin main"
                 }
             }
