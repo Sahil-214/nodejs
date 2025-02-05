@@ -33,20 +33,20 @@
 
 pipeline {
     agent any
+
     environment {
-        DOCKER_REGISTRY = 'docker.io/arsalan94'
+        DOCKER_REGISTRY = 'docker.io'
         APP_NAME = 'nodejs'
-        DOCKER_USERNAME = 'arsalan94'
-        DOCKER_PASSWORD = 'Arsalan@1234$'
+        DOCKER_USERNAME = credentials('docker-hub-credentials') // Uses Jenkins credentials
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Version Bump') {
             steps {
                 script {
@@ -65,20 +65,20 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Authenticate Docker Hub') {
             steps {
                 script {
-                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    sh "echo ${DOCKER_USERNAME_PSW} | docker login -u ${DOCKER_USERNAME_USR} --password-stdin"
                 }
             }
         }
-        
+
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    def imageTag = "${DOCKER_REGISTRY}/${APP_NAME}:${newVersion}"
-                    def latestTag = "${DOCKER_REGISTRY}/${APP_NAME}:latest"
+                    def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:${newVersion}"
+                    def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:latest"
                     
                     sh "docker build -t ${imageTag} ."
                     sh "docker tag ${imageTag} ${latestTag}"
@@ -89,4 +89,5 @@ pipeline {
         }
     }
 }
+
 
