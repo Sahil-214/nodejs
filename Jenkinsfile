@@ -54,16 +54,14 @@ pipeline {
                         def version = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                         def (major, minor, patch) = version.tokenize('.')
                         patch = patch.toInteger() + 1
-                        newVersion = "${major}.${minor}.${patch}" // 👈 Define newVersion globally
+                        newVersion = "${major}.${minor}.${patch}"
 
                         echo "New Version: ${newVersion}"
                         sh "echo '${newVersion}' > VERSION"
                         sh "git config --global user.email 'mohammedarsalan204@gmail.com'"
                         sh "git config --global user.name 'ItsArsalanMD'"
 
-                        // Set GitHub authentication for pushing changes
                         sh "git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/ItsArsalanMD/nodejs.git"
-
                         sh "git add VERSION"
                         sh "git commit -m 'Version bump to ${newVersion} [ci skip]'"
                         sh "git checkout main"
@@ -78,8 +76,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME_USR', passwordVariable: 'DOCKER_USERNAME_PSW')]) {
-                        // Debugging Docker Username and Password
-                        echo "Docker Username: ${DOCKER_USERNAME_USR}"
+                        echo "Docker Username: ${DOCKER_USERNAME_USR}"  // Debugging Docker Username
                         sh "echo ${DOCKER_USERNAME_PSW} | docker login -u ${DOCKER_USERNAME_USR} --password-stdin"
                     }
                 }
@@ -89,20 +86,16 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:${newVersion}"
-                    def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:latest"
+                    def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME_USR}/${APP_NAME}:${newVersion}"
+                    def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME_USR}/${APP_NAME}:latest"
 
-                    // Debugging image tags
-                    echo "Building Docker Image: ${imageTag}"
+                    echo "Building Docker Image: ${imageTag}"  // Debugging the image tag
                     echo "Tagging Latest: ${latestTag}"
 
-                    // Building Docker image
-                    sh "docker build -t ${imageTag} ."
-                    sh "docker tag ${imageTag} ${latestTag}"
-
-                    // Push images
-                    sh "docker push ${imageTag}"
-                    sh "docker push ${latestTag}"
+                    sh "docker build -t ${imageTag} ."  // Build image with version
+                    sh "docker tag ${imageTag} ${latestTag}"  // Tag with latest
+                    sh "docker push ${imageTag}"  // Push versioned image
+                    sh "docker push ${latestTag}"  // Push latest image
                 }
             }
         }
