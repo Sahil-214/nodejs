@@ -54,7 +54,7 @@ pipeline {
                         def version = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                         def (major, minor, patch) = version.tokenize('.')
                         patch = patch.toInteger() + 1
-                        def newVersion = "${major}.${minor}.${patch}"
+                        newVersion = "${major}.${minor}.${patch}" // 👈 Define newVersion globally
 
                         echo "New Version: ${newVersion}"
                         sh "echo '${newVersion}' > VERSION"
@@ -77,7 +77,9 @@ pipeline {
         stage('Authenticate Docker Hub') {
             steps {
                 script {
-                    sh "echo ${DOCKER_USERNAME_PSW} | docker login -u ${DOCKER_USERNAME_USR} --password-stdin"
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME_USR', passwordVariable: 'DOCKER_USERNAME_PSW')]) {
+                        sh "echo ${DOCKER_USERNAME_PSW} | docker login -u ${DOCKER_USERNAME_USR} --password-stdin"
+                    }
                 }
             }
         }
@@ -88,6 +90,7 @@ pipeline {
                     def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:${newVersion}"
                     def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:latest"
 
+                    echo "Building Docker Image: ${imageTag}"
                     sh "docker build -t ${imageTag} ."
                     sh "docker tag ${imageTag} ${latestTag}"
                     sh "docker push ${imageTag}"
@@ -97,6 +100,3 @@ pipeline {
         }
     }
 }
-
-
-
