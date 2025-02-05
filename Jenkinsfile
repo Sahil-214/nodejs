@@ -50,26 +50,20 @@ pipeline {
         stage('Version Bump') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        def version = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
-                        def (major, minor, patch) = version.tokenize('.')
-                        patch = patch.toInteger() + 1
-                        def newVersion = "${major}.${minor}.${patch}"
-
-                        echo "New Version: ${newVersion}"
-                        sh "echo '${newVersion}' > VERSION"
-                        sh "git config --global user.email 'mohammedarsalan204@gmail.com'"
-                        sh "git config --global user.name 'ItsArsalanMD'"
-
-                        // Set GitHub authentication for pushing changes
-                        sh "git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/ItsArsalanMD/nodejs.git"
-
-                        sh "git add VERSION"
-                        sh "git commit -m 'Version bump to ${newVersion} [ci skip]'"
-                        sh "git checkout main"
-                        sh "git pull origin main"
-                        sh "git push origin main"
-                    }
+                    def version = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                    def (major, minor, patch) = version.tokenize('.')
+                    patch = patch.toInteger() + 1
+                    def newVersion = "${major}.${minor}.${patch}"
+                    
+                    echo "New Version: ${newVersion}"
+                    sh "echo '${newVersion}' > VERSION"
+                    sh "git config --global user.email 'mohammedarsalan204@gmail.com'"
+                    sh "git config --global user.name 'ItsArsalanMD'"
+                    sh "git add VERSION"
+                    sh "git commit -m 'Version bump to ${newVersion}'"
+                    sh "git checkout main"
+                    sh "git pull origin main"
+                    sh "git push origin main"
                 }
             }
         }
@@ -87,7 +81,7 @@ pipeline {
                 script {
                     def imageTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:${newVersion}"
                     def latestTag = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${APP_NAME}:latest"
-
+                    
                     sh "docker build -t ${imageTag} ."
                     sh "docker tag ${imageTag} ${latestTag}"
                     sh "docker push ${imageTag}"
@@ -97,6 +91,5 @@ pipeline {
         }
     }
 }
-
 
 
